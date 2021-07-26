@@ -140,7 +140,4 @@ def itransform(axis, data, order=1, phase_coeff=None, return_phase_coeff=False, 
     inplace_fft=functools.partial(scipy.fft.fft,overwrite_x=True),
     inplace_ifft=functools.partial(scipy.fft.ifft,overwrite_x=True),
     np=numpy):
-  return transform(axis, data, -order, phase_coeff=None, return_phase_coeff=False, overwrite=False,
-    inplace_fft=functools.partial(scipy.fft.fft,overwrite_x=True),
-    inplace_ifft=functools.partial(scipy.fft.ifft,overwrite_x=True),
-    np=numpy)
+  return transform(axis, data, -order, phase_coeff, return_phase_coeff, overwrite, inplace_fft, inplace_ifft, np)
