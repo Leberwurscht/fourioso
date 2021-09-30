@@ -19,16 +19,15 @@ def get_axis(n, spacing, axis_nr=0, ndim=1, axis_center=0, np=numpy):
   axis = axis.reshape(axis_shape(n,axis_nr,ndim))
   return axis
 
-def linear_phase_oft(spacing, data=None, axis=-1, axis_center=0, additional_linear_phase=0, overwrite=False, multiply_phase=False, inplace_fft=functools.partial(scipy.fft.fft,overwrite_x=True), np=numpy):
+def linear_phase_oft(spacing, n, data=None, axis=-1, axis_center=0, additional_linear_phase=0, overwrite=False, multiply_phase=False, inplace_fft=functools.partial(scipy.fft.fft,overwrite_x=True), np=numpy):
   axis_center_out = additional_linear_phase/2/np.pi
   additional_linear_phase_out = -2*np.pi*axis_center
 
   if data is not None:
     if not overwrite or not np.iscomplexobj(data): data = np.array(data, dtype=(data.flat[0]+np.array(1,dtype=np.complex64)).dtype)
 
-    n = data.shape[axis]
     shape = axis_shape(n, axis, data.ndim)
-  
+
     b1 = np.exp(-1j*2*np.pi * ((n+1)//2)/n)
     b2 = np.exp(1j*2*np.pi * (n//2)/n)
     factor = np.exp(1j*2*np.pi * ((n//2)/2+1)/n * (n%2)) * spacing * np.exp(-1j*2*np.pi*axis_center_out*axis_center)
@@ -36,14 +35,14 @@ def linear_phase_oft(spacing, data=None, axis=-1, axis_center=0, additional_line
       factor *= np.exp(-1j*additional_linear_phase_out/spacing/n*(1+n//2))
       b2 *= np.exp(1j*additional_linear_phase_out/spacing/n)
     b1,b2,factor = b1.astype(data.dtype),b2.astype(data.dtype),factor.astype(data.dtype)
-  
+
     data *= np.cumprod(np.broadcast_to(b1,shape),axis=axis)
     data = inplace_fft(data,None,axis)
     data *= np.cumprod(np.broadcast_to(b2,shape),axis=axis) * factor
 
   return 1/spacing/n, axis_center_out, data, additional_linear_phase_out
 
-def linear_phase_ioft(spacing, data=None, axis=-1, axis_center=0, additional_linear_phase=0, overwrite=False, multiply_phase=False, inplace_ifft=functools.partial(scipy.fft.ifft,overwrite_x=True), np=numpy):
+def linear_phase_ioft(spacing, n, data=None, axis=-1, axis_center=0, additional_linear_phase=0, overwrite=False, multiply_phase=False, inplace_ifft=functools.partial(scipy.fft.ifft,overwrite_x=True), np=numpy):
 
   axis_center_out = -additional_linear_phase/2/np.pi
   additional_linear_phase_out = 2*np.pi*axis_center
@@ -51,7 +50,6 @@ def linear_phase_ioft(spacing, data=None, axis=-1, axis_center=0, additional_lin
   if data is not None:
     if not overwrite or not np.iscomplexobj(data): data = np.array(data, dtype=(data.flat[0]+np.array(1,dtype=np.complex64)).dtype)
 
-    n = data.shape[axis]
     shape = axis_shape(n, axis, data.ndim)
 
     b1 = np.exp(1j*2*np.pi * ((n+1)//2)/n)
@@ -105,12 +103,12 @@ def linear_phase_oidentity(spacing, data=None, axis=-1, axis_center=0, additiona
 
   return spacing, axis_center, data_out, additional_linear_phase
 
-def linear_phase_multioft(spacing, data, order=1, axis=-1, axis_center=0, additional_linear_phase=0, multiply_phase=False, overwrite=False, inplace_fft=functools.partial(scipy.fft.fft,overwrite_x=True), inplace_ifft=functools.partial(scipy.fft.ifft,overwrite_x=True), np=numpy):
+def linear_phase_multioft(spacing, n, data, order=1, axis=-1, axis_center=0, additional_linear_phase=0, multiply_phase=False, overwrite=False, inplace_fft=functools.partial(scipy.fft.fft,overwrite_x=True), inplace_ifft=functools.partial(scipy.fft.ifft,overwrite_x=True), np=numpy):
   order = order % 4
   if order==0: return linear_phase_oidentity(spacing, data, axis=axis, axis_center=axis_center, additional_linear_phase=additional_linear_phase, multiply_phase=multiply_phase, overwrite=overwrite, np=np)
-  elif order==1: return linear_phase_oft(spacing, data, axis=axis, axis_center=axis_center, additional_linear_phase=additional_linear_phase, multiply_phase=multiply_phase, overwrite=overwrite, inplace_fft=inplace_fft, np=np)
+  elif order==1: return linear_phase_oft(spacing, n, data, axis=axis, axis_center=axis_center, additional_linear_phase=additional_linear_phase, multiply_phase=multiply_phase, overwrite=overwrite, inplace_fft=inplace_fft, np=np)
   elif order==2: return linear_phase_odoubleft(spacing, data, axis=axis, axis_center=axis_center, additional_linear_phase=additional_linear_phase, multiply_phase=multiply_phase, overwrite=overwrite, np=np)
-  elif order==3: return linear_phase_ioft(spacing, data, axis=axis, axis_center=axis_center, additional_linear_phase=additional_linear_phase, multiply_phase=multiply_phase, overwrite=overwrite, inplace_ifft=inplace_ifft, np=np)
+  elif order==3: return linear_phase_ioft(spacing, n, data, axis=axis, axis_center=axis_center, additional_linear_phase=additional_linear_phase, multiply_phase=multiply_phase, overwrite=overwrite, inplace_ifft=inplace_ifft, np=np)
 
 def transform(axis, data=None, order=1, phase_coeff=None, return_phase_coeff=False, overwrite=False,
     inplace_fft=functools.partial(scipy.fft.fft,overwrite_x=True),
@@ -120,8 +118,8 @@ def transform(axis, data=None, order=1, phase_coeff=None, return_phase_coeff=Fal
   # TO DO: sign argument
 
   axis_nr = numpy.argmax(axis.shape)
+  n = axis.size
   axis = axis.squeeze()
-  n = data.shape[axis_nr]
   axis_center_i = n//2
   axis_center = axis[axis_center_i]
   spacing = axis[1] - axis[0]
@@ -133,8 +131,8 @@ def transform(axis, data=None, order=1, phase_coeff=None, return_phase_coeff=Fal
 
   if not type(order)==int: raise ValueError("order must be an integer")
 
-  spacing_out, axis_center_out, data_out, additional_linear_phase_out = linear_phase_multioft(spacing, data, order=order, axis=axis_nr, axis_center=axis_center, additional_linear_phase=additional_linear_phase, overwrite=overwrite, inplace_fft=inplace_fft, inplace_ifft=inplace_ifft, np=np, multiply_phase=not return_phase_coeff)
-  axis_out = get_axis(n, spacing_out, axis_nr, data.ndim, axis_center_out, np=np)
+  spacing_out, axis_center_out, data_out, additional_linear_phase_out = linear_phase_multioft(spacing, n, data, order=order, axis=axis_nr, axis_center=axis_center, additional_linear_phase=additional_linear_phase, overwrite=overwrite, inplace_fft=inplace_fft, inplace_ifft=inplace_ifft, np=np, multiply_phase=not return_phase_coeff)
+  axis_out = get_axis(n, spacing_out, axis_nr, data.ndim if data is not None else 1, axis_center_out, np=np)
 
   if return_phase_coeff:
     if data is not None:
@@ -147,7 +145,7 @@ def transform(axis, data=None, order=1, phase_coeff=None, return_phase_coeff=Fal
     else:
       return axis_out
 
-def itransform(axis, data, order=1, phase_coeff=None, return_phase_coeff=False, overwrite=False,
+def itransform(axis, data=None, order=1, phase_coeff=None, return_phase_coeff=False, overwrite=False,
     inplace_fft=functools.partial(scipy.fft.fft,overwrite_x=True),
     inplace_ifft=functools.partial(scipy.fft.ifft,overwrite_x=True),
     np=numpy):
