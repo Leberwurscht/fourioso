@@ -24,7 +24,7 @@ def linear_phase_oft(spacing, n, data=None, axis=-1, axis_center=0, additional_l
   additional_linear_phase_out = -2*np.pi*axis_center
 
   if data is not None:
-    if not overwrite or not np.iscomplexobj(data): data = np.array(data, dtype=(data.flat[0]+np.array(1,dtype=np.complex64)).dtype)
+  if not overwrite or not np.iscomplexobj(data): data = np.array(data, dtype=(data.ravel()[0]+np.array(1,dtype=np.complex64)).dtype)
 
     shape = axis_shape(n, axis, data.ndim)
 
@@ -48,7 +48,7 @@ def linear_phase_ioft(spacing, n, data=None, axis=-1, axis_center=0, additional_
   additional_linear_phase_out = 2*np.pi*axis_center
 
   if data is not None:
-    if not overwrite or not np.iscomplexobj(data): data = np.array(data, dtype=(data.flat[0]+np.array(1,dtype=np.complex64)).dtype)
+    if not overwrite or not np.iscomplexobj(data): data = np.array(data, dtype=(data.ravel()[0]+np.array(1,dtype=np.complex64)).dtype)
 
     shape = axis_shape(n, axis, data.ndim)
 
