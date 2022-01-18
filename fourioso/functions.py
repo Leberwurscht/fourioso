@@ -110,7 +110,7 @@ def linear_phase_multioft(spacing, n, data, order=1, axis=-1, axis_center=0, add
   elif order==2: return linear_phase_odoubleft(spacing, data, axis=axis, axis_center=axis_center, additional_linear_phase=additional_linear_phase, multiply_phase=multiply_phase, overwrite=overwrite, np=np)
   elif order==3: return linear_phase_ioft(spacing, n, data, axis=axis, axis_center=axis_center, additional_linear_phase=additional_linear_phase, multiply_phase=multiply_phase, overwrite=overwrite, inplace_ifft=inplace_ifft, np=np)
 
-def transform(axis, data=None, order=1, phase_coeff=None, return_phase_coeff=False, overwrite=False,
+def transform(axis, data=None, order=1, phase_coeff=None, return_phase_coeff=False, overwrite=False, return_axis=True
     inplace_fft=functools.partial(scipy.fft.fft,overwrite_x=True),
     inplace_ifft=functools.partial(scipy.fft.ifft,overwrite_x=True),
     np=numpy
@@ -136,14 +136,18 @@ def transform(axis, data=None, order=1, phase_coeff=None, return_phase_coeff=Fal
 
   if return_phase_coeff:
     if data is not None:
-      return axis_out, data_out, additional_linear_phase
+      if return_axis: return axis_out, data_out, additional_linear_phase
+      else: return data_out, additional_linear_phase
     else:
-      return axis_out, additional_linear_phase
+      if return_axis: return axis_out, additional_linear_phase
+      else: return additional_linear_phase
   else:
     if data is not None:
-      return axis_out, data_out
+      if return_axis: return axis_out, data_out
+      else: return data_out
     else:
-      return axis_out
+      if return_axis: return axis_out
+      else: return
 
 def itransform(axis, data=None, order=1, phase_coeff=None, return_phase_coeff=False, overwrite=False,
     inplace_fft=functools.partial(scipy.fft.fft,overwrite_x=True),
