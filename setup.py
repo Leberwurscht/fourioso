@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="fourioso",
-    version="0.0.2",
+    version="0.0.3",
     author="Leberwurscht",
     author_email="leberwurscht@hoegners.de",
     description="",

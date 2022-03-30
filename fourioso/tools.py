@@ -14,12 +14,3 @@ def piecewise_cossqr(x, xs, ys):
   y[x>xs[-1]] = ys[-1]
 
   return y
-
-def get_fwhm(x, y):
-  spline = scipy.interpolate.UnivariateSpline(x, y-np.max(y)/2, s=0)
-
-  try:
-    r1, r2 = spline.roots()
-    return r2-r1
-  except ValueError:
-    return np.nan
