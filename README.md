@@ -1,6 +1,7 @@
 User-friendly Fourier transform package.
 
-== Introduction ==
+Introduction
+------------
 
 Numerical libraries like numpy & scipy provide fft/ifft functions.
 These are fairly low-level if one is looking for a numerical approximation of the Fourier transform - the user has to take care of:
@@ -18,9 +19,11 @@ The discrete Fourier transform for zero-centered frequency & time axis is obtain
 For Parsevals theorem to be true, scaling factors need to be added:
 
 ```python
-def ft(axis, data): return scipy.fft.fftshift(scipy.fft.fft(scipy.fft.ifftshift(data))) * (axis[1]-axis[0])
+def ft(axis, data):
+  return scipy.fft.fftshift(scipy.fft.fft(scipy.fft.ifftshift(data))) * (axis[1]-axis[0])
 
-def ift(axis, data): return scipy.fft.fftshift(scipy.fft.ifft(scipy.fft.ifftshift(data))) * (axis[1]-axis[0]) * axis.size
+def ift(axis, data):
+  return scipy.fft.fftshift(scipy.fft.ifft(scipy.fft.ifftshift(data))) * (axis[1]-axis[0]) * axis.size
 ```
 
 The corresponding axis can be generated like this:
@@ -33,7 +36,7 @@ nu_spacing = 1/t_spacing/n_points
 nu = ( np.arange(n_points, dtype=float)-n_points//2 ) * nu_spacing
 ```
 
-Using these functions, the Plancherel theorem is valid:
+When using `ft` and `ift`, the Plancherel theorem is valid:
 
 ```python
 data = np.exp(-t**2)
@@ -47,7 +50,8 @@ Make sure that `n_points` does not contain large prime factors, otherwise perfor
 
 You can just copy these simple `ft` and `ift` functions into your code, or you can use this module, which implements a slightly more general version of the Fourier transform, the so-called offset Fourier transform (see <https://doi.org/10.1364/JOSAA.20.000522>).
 
-== This module ==
+This module
+-----------
 
 Installation:
 
